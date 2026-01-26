@@ -159,7 +159,14 @@ export async function listMedia(params?: {
   return result;
 }
 
-export async function getMedia(mediaId: string): Promise<MediaUploadResponse> {
+export async function getMedia(mediaId: string, options?: { forceRefresh?: boolean }): Promise<MediaUploadResponse> {
+  const cacheKey = `media_get:v1:${mediaId}`;
+  
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<MediaUploadResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
   const result = await apiFetch<MediaUploadResponse>(
     `/media/${mediaId}`,
     {
@@ -167,6 +174,9 @@ export async function getMedia(mediaId: string): Promise<MediaUploadResponse> {
     },
     { withAuth: true },
   );
+
+  // Cache for 1 hour - media metadata doesn't change frequently
+  setCachedValue(cacheKey, result, 60 * 60 * 1000);
 
   return result;
 }

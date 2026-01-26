@@ -16,7 +16,7 @@ interface AuthContextType {
   hasFacebookToken: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => void;
-  checkFacebookToken: () => Promise<boolean>;
+  checkFacebookToken: (forceRefresh?: boolean) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,14 +85,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeSession();
   }, []); // Run only once on mount
 
-  const checkFacebookTokenStatus = useCallback(async (): Promise<boolean> => {
+  const checkFacebookTokenStatus = useCallback(async (forceRefresh?: boolean): Promise<boolean> => {
     try {
       // Use cached API call instead of direct fetch - will return from localStorage if available
-      const res = await fetchFacebookToken();
+      const res = await fetchFacebookToken({ forceRefresh });
       const hasFbToken = res.success === true && res.data && Object.keys(res.data).length > 0;
       setHasFacebookToken(hasFbToken);
       return hasFbToken;
     } catch {
+      setHasFacebookToken(false);
       return false;
     }
   }, []);

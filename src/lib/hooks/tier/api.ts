@@ -119,14 +119,26 @@ export interface UploadScreenshotResponse {
 /**
  * Get all tiers for a platform
  */
-export async function getPlatformTiers(platform: string): Promise<TierListResponse> {
-  return apiFetch<TierListResponse>(
+export async function getPlatformTiers(platform: string, options?: { forceRefresh?: boolean }): Promise<TierListResponse> {
+  const cacheKey = `platform_tiers:v1:${platform}`;
+  
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<TierListResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
+  const data = await apiFetch<TierListResponse>(
     `/tiers/${platform}`,
     {
       method: 'GET',
     },
     { withAuth: false }, // Public endpoint
   );
+
+  // Cache for 1 hour - tiers don't change frequently
+  setCachedValue(cacheKey, data, 60 * 60 * 1000);
+
+  return data;
 }
 
 /**
@@ -161,15 +173,28 @@ export async function getUserUsage(
  */
 export async function checkCredits(
   platform: string,
-  credit_type: string
+  credit_type: string,
+  options?: { forceRefresh?: boolean }
 ): Promise<{ has_credits: boolean; remaining: number; credit_type: string; message: string; is_unlimited: boolean }> {
-  return apiFetch<{ has_credits: boolean; remaining: number; credit_type: string; message: string; is_unlimited: boolean }>(
+  const cacheKey = `credits_check:v1:${platform}:${credit_type}`;
+  
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<{ has_credits: boolean; remaining: number; credit_type: string; message: string; is_unlimited: boolean }>(cacheKey);
+    if (cached) return cached;
+  }
+
+  const data = await apiFetch<{ has_credits: boolean; remaining: number; credit_type: string; message: string; is_unlimited: boolean }>(
     `/usage/${platform}/check/${credit_type}`,
     {
       method: 'GET',
     },
     { withAuth: true },
   );
+
+  // Cache for 5 minutes - credits can change frequently
+  setCachedValue(cacheKey, data, 5 * 60 * 1000);
+
+  return data;
 }
 
 /**
@@ -212,13 +237,25 @@ export async function uploadPaymentScreenshot(
 /**
  * Get user's orders
  */
-export async function getMyOrders(platform?: string): Promise<OrderListResponse> {
+export async function getMyOrders(platform?: string, options?: { forceRefresh?: boolean }): Promise<OrderListResponse> {
+  const cacheKey = `my_orders:v1:${platform || 'all'}`;
+  
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<OrderListResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
   const url = platform ? `/orders/my-orders?platform=${platform}` : '/orders/my-orders';
-  return apiFetch<OrderListResponse>(
+  const data = await apiFetch<OrderListResponse>(
     url,
     {
       method: 'GET',
     },
     { withAuth: true },
   );
+
+  // Cache for 2 minutes - orders can change when new ones are created
+  setCachedValue(cacheKey, data, 2 * 60 * 1000);
+
+  return data;
 }

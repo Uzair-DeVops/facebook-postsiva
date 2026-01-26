@@ -14,7 +14,7 @@ import Image from "next/image";
 
 export function PageSelectorHeader() {
   const { selectedPage, setSelectedPage, pages, setPages, loading, setLoading } = useSelectedPage();
-  const { user } = useAuthContext();
+  const { user, checkFacebookToken } = useAuthContext();
   const { profile } = useFacebookUserProfile({ autoLoad: true });
   const router = useRouter();
   const [showPageDropdown, setShowPageDropdown] = useState(false);
@@ -122,6 +122,15 @@ export function PageSelectorHeader() {
       
       // Close the dropdown
       setShowProfileDropdown(false);
+      
+      // Force refresh Facebook token status in AuthContext before redirect
+      // This ensures hasFacebookToken is updated before the redirect happens
+      try {
+        await checkFacebookToken(true); // Force refresh to bypass cache
+      } catch (err) {
+        // Ignore errors - token check will happen on page load anyway
+        console.debug('Token check after disconnect:', err);
+      }
       
       // Use window.location.href to force a full page reload
       // This ensures AuthContext re-checks the Facebook token status

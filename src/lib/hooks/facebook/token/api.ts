@@ -22,6 +22,7 @@ export async function fetchFacebookToken(options?: { forceRefresh?: boolean }): 
   if (data?.success) {
     setCachedValue(CACHE_KEY, data, CACHE_TTL_MS);
   } else {
+    // Clear cache if token doesn't exist or request failed
     clearCachedValue(CACHE_KEY);
   }
 

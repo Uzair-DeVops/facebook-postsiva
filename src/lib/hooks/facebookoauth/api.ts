@@ -119,6 +119,9 @@ export async function disconnectFacebook(): Promise<void> {
     { withAuth: true },
   );
 
+  // Clear all Facebook-related caches
   clearCachedByPrefix('facebook_pages:v1');
+  clearCachedByPrefix('facebook_token:v1');
+  clearCachedByPrefix('facebook_user_profile:v1');
 }
 
