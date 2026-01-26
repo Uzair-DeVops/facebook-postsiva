@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginRequest, fetchCurrentUser } from './api';
+import { fetchFacebookToken } from '../facebook/token/api';
 import type { AuthUser, LoginPayload } from './types';
 import { API_ENDPOINTS, buildApiUrl, STORAGE_KEYS } from '../../config';
 import { getUserUsage } from '../tier/api';
@@ -86,26 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkFacebookTokenStatus = useCallback(async (): Promise<boolean> => {
     try {
-      const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      if (!accessToken) return false;
-
-      const url = buildApiUrl(API_ENDPOINTS.FACEBOOK.GET_TOKEN);
-      const response = await fetch(
-        url,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      // Check if the response indicates a successful token retrieval
-      // The endpoint returns { success: true, data: {...} } when token exists
-      // and { success: false, data: {} } when token doesn't exist
-      const hasFbToken = data.success === true && data.data && Object.keys(data.data).length > 0;
+      // Use cached API call instead of direct fetch - will return from localStorage if available
+      const res = await fetchFacebookToken();
+      const hasFbToken = res.success === true && res.data && Object.keys(res.data).length > 0;
       setHasFacebookToken(hasFbToken);
       return hasFbToken;
     } catch {

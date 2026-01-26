@@ -44,9 +44,9 @@ const nextConfig: NextConfig = {
 
   // Optimize production builds
   // swcMinify: true, // Removed for Next.js 15+ compatibility
-  // Enable React strict mode for better performance
-  // Note: swcMinify is enabled by default in Next.js 15, no need to specify it
-  reactStrictMode: true,
+  // Disable React strict mode to prevent double-mounting in development
+  // This avoids duplicate API calls during dev while caching is in place
+  reactStrictMode: false,
 
   // Optimize compiler
   compiler: {

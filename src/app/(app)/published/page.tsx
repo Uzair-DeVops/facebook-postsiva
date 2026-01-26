@@ -3,7 +3,7 @@
 import { motion, Variants } from "framer-motion";
 import { RefreshCw, Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { fetchFacebookPosts } from "@/lib/hooks/facebook/posts/api";
 import { fetchFacebookPages } from "@/lib/hooks/facebookoauth/api";
 import type { FacebookPage } from "@/lib/hooks/facebookoauth/types";
@@ -58,6 +58,7 @@ export default function PublishedPostsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const hasInitialLoadedRef = useRef(false);
   
   // Pagination state
   const [pageSize, setPageSize] = useState(20);
@@ -68,14 +69,24 @@ export default function PublishedPostsPage() {
   });
 
   // Sync with global selected page - if a page is selected globally, use it
+  // But only after initial load to avoid double-fetching
   useEffect(() => {
-    if (selectedPage) {
+    if (selectedPage && hasInitialLoadedRef.current) {
       setSelectedPageId(selectedPage.page_id);
     }
   }, [selectedPage]);
 
   // Load pages and posts - only on mount and when selectedPageId or pageSize changes
   useEffect(() => {
+    if (!hasInitialLoadedRef.current) {
+      hasInitialLoadedRef.current = true;
+      loadPosts();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch when selectedPageId or pageSize changes (after initial load)
+  useEffect(() => {
+    if (!hasInitialLoadedRef.current) return;
     loadPosts();
   }, [selectedPageId, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -94,7 +105,7 @@ export default function PublishedPostsPage() {
       }
       setError(null);
 
-      // 1. Fetch all Facebook pages
+      // 1. Fetch all Facebook pages - use cached version (no forceRefresh unless explicit)
       const pagesResponse = await fetchFacebookPages();
       if (!pagesResponse.success || !pagesResponse.pages) {
         throw new Error("Failed to load Facebook pages");
@@ -104,6 +115,13 @@ export default function PublishedPostsPage() {
         ? pagesResponse.pages 
         : [pagesResponse.pages];
       setPages(pagesArray);
+
+      // Only proceed if we have a valid selectedPageId (after initial load)
+      if (!hasInitialLoadedRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
 
       // 2. Fetch posts based on selection
       if (selectedPageId === "all") {
