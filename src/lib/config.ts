@@ -186,5 +186,5 @@ export function getFullFrontendCallbackUrl(): string {
  */
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'postsiva_access_token',
-  USER_INFO: 'postsiva_user'
+  USER_INFO: 'postsiva_user',
 } as const;
