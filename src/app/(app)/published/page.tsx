@@ -74,10 +74,10 @@ export default function PublishedPostsPage() {
     }
   }, [selectedPage]);
 
-  // Load pages and posts
+  // Load pages and posts - only on mount and when selectedPageId or pageSize changes
   useEffect(() => {
     loadPosts();
-  }, [selectedPageId, pageSize]);
+  }, [selectedPageId, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset pagination when page selection changes
   useEffect(() => {

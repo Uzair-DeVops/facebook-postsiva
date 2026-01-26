@@ -1,4 +1,5 @@
 import { apiFetch } from '../../../apiClient';
+import { clearCachedValue, getCachedValue, setCachedValue } from '../../../cache';
 import { buildApiUrl, API_ENDPOINTS } from '../../../config';
 import type {
   PersonaResponse,
@@ -6,6 +7,10 @@ import type {
   PersonaPatchRequest,
   PersonaRegenerateRequest,
 } from './types';
+
+// Long-lived cache; use forceRefresh to pull fresh after edits
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 year
+const cacheKey = (pageId: string) => `persona:v1:${pageId}`;
 
 export async function buildPersona(
   pageId: string,
@@ -36,6 +41,11 @@ export async function getPersona(
   const queryParams = new URLSearchParams({
     force_refresh: forceRefresh.toString(),
   });
+
+  if (!forceRefresh) {
+    const cached = getCachedValue<PersonaResponse>(cacheKey(pageId));
+    if (cached) return cached;
+  }
   
   const data = await apiFetch<PersonaResponse>(
     `${url}?${queryParams.toString()}`,
@@ -44,6 +54,8 @@ export async function getPersona(
     },
     { withAuth: true },
   );
+
+  setCachedValue(cacheKey(pageId), data, CACHE_TTL_MS);
 
   return data;
 }
@@ -63,6 +75,8 @@ export async function updatePersona(
     { withAuth: true },
   );
 
+  clearCachedValue(cacheKey(pageId));
+
   return data;
 }
 
@@ -81,6 +95,8 @@ export async function patchPersona(
     { withAuth: true },
   );
 
+  clearCachedValue(cacheKey(pageId));
+
   return data;
 }
 
@@ -96,6 +112,8 @@ export async function deletePersona(
     },
     { withAuth: true },
   );
+
+  clearCachedValue(cacheKey(pageId));
 
   return data;
 }
@@ -118,6 +136,8 @@ export async function regeneratePersona(
     },
     { withAuth: true },
   );
+
+  clearCachedValue(cacheKey(pageId));
 
   return data;
 }

@@ -23,6 +23,7 @@ export function useSubscription(platform: string = 'facebook') {
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasLocal, setHasLocal] = useState(false);
 
   const checkSubscription = useCallback(async () => {
     try {
@@ -97,6 +98,8 @@ export function useSubscription(platform: string = 'facebook') {
         try {
           const parsed = JSON.parse(stored);
           setSubscription(parsed);
+          setHasLocal(true);
+          setLoading(false);
         } catch {
           // Ignore parse errors
         }
@@ -106,8 +109,9 @@ export function useSubscription(platform: string = 'facebook') {
 
   // Check subscription on mount
   useEffect(() => {
+    if (hasLocal) return; // local-first: only hit network if no local copy
     checkSubscription();
-  }, [checkSubscription]);
+  }, [checkSubscription, hasLocal]);
 
   return {
     subscription,

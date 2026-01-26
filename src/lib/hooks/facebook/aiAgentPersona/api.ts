@@ -1,4 +1,5 @@
 import { apiFetch } from '../../../apiClient';
+import { clearCachedValue, getCachedValue, setCachedValue } from '../../../cache';
 import { buildApiUrl, API_ENDPOINTS } from '../../../config';
 import type {
   AIAgentPersonaResponse,
@@ -6,6 +7,10 @@ import type {
   AIAgentPersonaPatchRequest,
   AIAgentPersonaRegenerateRequest,
 } from './types';
+
+// Long-lived cache; use forceRefresh to pull fresh after edits
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 year
+const cacheKey = (pageId: string) => `ai_agent_persona:v1:${pageId}`;
 
 export async function buildAIAgentPersona(
   pageId: string,
@@ -46,8 +51,14 @@ export async function buildAIAgentPersona(
 
 export async function getAIAgentPersona(
   pageId: string,
+  options?: { forceRefresh?: boolean },
 ): Promise<AIAgentPersonaResponse> {
   const url = buildApiUrl(`${API_ENDPOINTS.FACEBOOK.AI_AGENT_PERSONA.GET}/${pageId}`);
+
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<AIAgentPersonaResponse>(cacheKey(pageId));
+    if (cached) return cached;
+  }
   
   const data = await apiFetch<AIAgentPersonaResponse>(
     url,
@@ -56,6 +67,8 @@ export async function getAIAgentPersona(
     },
     { withAuth: true },
   );
+
+  setCachedValue(cacheKey(pageId), data, CACHE_TTL_MS);
 
   return data;
 }
@@ -75,6 +88,8 @@ export async function updateAIAgentPersona(
     { withAuth: true },
   );
 
+  clearCachedValue(cacheKey(pageId));
+
   return data;
 }
 
@@ -93,6 +108,8 @@ export async function patchAIAgentPersona(
     { withAuth: true },
   );
 
+  clearCachedValue(cacheKey(pageId));
+
   return data;
 }
 
@@ -108,6 +125,8 @@ export async function deleteAIAgentPersona(
     },
     { withAuth: true },
   );
+
+  clearCachedValue(cacheKey(pageId));
 
   return data;
 }
@@ -126,6 +145,8 @@ export async function regenerateAIAgentPersona(
     },
     { withAuth: true },
   );
+
+  clearCachedValue(cacheKey(pageId));
 
   return data;
 }

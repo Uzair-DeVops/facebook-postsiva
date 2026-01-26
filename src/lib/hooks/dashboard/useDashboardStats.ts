@@ -26,12 +26,12 @@ export function useDashboardStats() {
     lastUpdated: null,
   });
 
-  const fetchStats = useCallback(async () => {
+  const fetchStats = useCallback(async (options?: { forceRefresh?: boolean }) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       const [overviewData, videosData] = await Promise.all([
-        fetchDashboardOverview(),
-        fetchDashboardVideos(),
+        fetchDashboardOverview({ forceRefresh: options?.forceRefresh }),
+        fetchDashboardVideos({ forceRefresh: options?.forceRefresh }),
       ]);
 
       // Log the response for debugging
@@ -128,10 +128,10 @@ export function useDashboardStats() {
     }
   }, []);
 
-  const fetchOverview = useCallback(async () => {
+  const fetchOverview = useCallback(async (options?: { forceRefresh?: boolean }) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
-      const overviewData = await fetchDashboardOverview();
+      const overviewData = await fetchDashboardOverview({ forceRefresh: options?.forceRefresh });
 
       if (!overviewData.success) {
         throw new Error(overviewData.error || overviewData.message);
@@ -167,10 +167,10 @@ export function useDashboardStats() {
     }
   }, []);
 
-  const fetchVideos = useCallback(async () => {
+  const fetchVideos = useCallback(async (options?: { forceRefresh?: boolean }) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
-      const videosData = await fetchDashboardVideos();
+      const videosData = await fetchDashboardVideos({ forceRefresh: options?.forceRefresh });
 
       if (!videosData.success) {
         throw new Error(videosData.error || videosData.message);

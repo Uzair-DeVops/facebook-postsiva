@@ -92,8 +92,13 @@ export default function ScheduledPage() {
   // Use text post hook
   const { publishTextPost, loading: textPostLoading } = useFacebookTextPost();
 
+  // Track if we've loaded once to prevent double-mount in dev mode
+  const hasLoadedRef = useRef(false);
+
   // Load scheduled posts on mount and when platform filter changes - filter only Facebook
   useEffect(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
     loadScheduledPosts({ platform: 'facebook' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

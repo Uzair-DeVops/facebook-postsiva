@@ -1,4 +1,5 @@
 import { apiFetch, setAccessToken, setUserInfo } from '../../apiClient';
+import { getCachedValue, setCachedValue } from '../../cache';
 import type { LoginPayload, LoginResponse, AuthUser } from './types';
 
 export async function loginRequest(payload: LoginPayload): Promise<LoginResponse> {
@@ -27,7 +28,16 @@ export async function signupRequest(payload: {
   return data;
 }
 
-export async function fetchCurrentUser(): Promise<AuthUser> {
+const AUTH_USER_CACHE_KEY = 'auth_user:v1';
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 year
+
+export async function fetchCurrentUser(options?: { forceRefresh?: boolean }): Promise<AuthUser> {
+  // Local-first: return from cache unless forceRefresh
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<AuthUser>(AUTH_USER_CACHE_KEY);
+    if (cached) return cached;
+  }
+
   const data = await apiFetch<AuthUser>(
     '/auth/me',
     {
@@ -38,6 +48,7 @@ export async function fetchCurrentUser(): Promise<AuthUser> {
 
   // Keep user info in local storage in sync
   setUserInfo(data);
+  setCachedValue(AUTH_USER_CACHE_KEY, data, CACHE_TTL_MS);
 
   return data;
 }

@@ -1,4 +1,5 @@
 import { apiFetch } from '../../apiClient';
+import { getCachedValue, setCachedValue } from '../../cache';
 import { buildApiUrl } from '../../config';
 
 /**
@@ -131,14 +132,28 @@ export async function getPlatformTiers(platform: string): Promise<TierListRespon
 /**
  * Get user's usage/credits for a platform
  */
-export async function getUserUsage(platform: string): Promise<GetUsageResponse> {
-  return apiFetch<GetUsageResponse>(
+export async function getUserUsage(
+  platform: string,
+  options?: { forceRefresh?: boolean }
+): Promise<GetUsageResponse> {
+  const cacheKey = `usage:v1:${platform}`;
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<GetUsageResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
+  const data = await apiFetch<GetUsageResponse>(
     `/usage/${platform}`,
     {
       method: 'GET',
     },
     { withAuth: true },
   );
+
+  // Cache for a long time; callers can forceRefresh after upgrades/changes
+  setCachedValue(cacheKey, data, 1000 * 60 * 60 * 24 * 365); // 1 year
+
+  return data;
 }
 
 /**
