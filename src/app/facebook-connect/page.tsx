@@ -102,7 +102,7 @@ export default function FacebookConnectPage() {
       // Helper function to cleanup polling
       const cleanupPolling = () => {
         if (pollIntervalRef.current) {
-          clearInterval(pollIntervalRef.current);
+          clearTimeout(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
         if (pollTimeoutRef.current) {
@@ -112,8 +112,12 @@ export default function FacebookConnectPage() {
         setIsConnecting(false);
       };
 
-      // Start polling for Facebook token every 5 seconds
-      pollIntervalRef.current = setInterval(async () => {
+      // Start polling for Facebook token with exponential backoff
+      const pollAttemptRef = { current: 0 };
+      const maxPollInterval = 30000; // Max 30 seconds
+      const baseInterval = 2000; // Start with 2 seconds
+      
+      const poll = async () => {
         try {
           // Check if popup is closed (user might have closed it manually)
           if (popupRef.current?.closed) {
@@ -132,12 +136,23 @@ export default function FacebookConnectPage() {
             
             cleanupPolling();
             router.push('/profile');
+          } else {
+            // Exponential backoff: 2s, 4s, 8s, 16s, 30s (max)
+            pollAttemptRef.current++;
+            const nextInterval = Math.min(baseInterval * Math.pow(2, pollAttemptRef.current - 1), maxPollInterval);
+            
+            pollIntervalRef.current = setTimeout(poll, nextInterval);
           }
         } catch (err) {
-          // Continue polling even if there's an error
-          console.error('Error checking Facebook token:', err);
+          // Continue polling even if there's an error with exponential backoff
+          pollAttemptRef.current++;
+          const nextInterval = Math.min(baseInterval * Math.pow(2, pollAttemptRef.current - 1), maxPollInterval);
+          pollIntervalRef.current = setTimeout(poll, nextInterval);
         }
-      }, 5000); // Poll every 5 seconds
+      };
+      
+      // Start first poll after base interval
+      pollIntervalRef.current = setTimeout(poll, baseInterval);
 
       // Stop polling after 10 minutes (safety timeout)
       pollTimeoutRef.current = setTimeout(() => {
@@ -155,7 +170,7 @@ export default function FacebookConnectPage() {
       
       // Cleanup on error
       if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
+        clearTimeout(pollIntervalRef.current);
         pollIntervalRef.current = null;
       }
       if (pollTimeoutRef.current) {

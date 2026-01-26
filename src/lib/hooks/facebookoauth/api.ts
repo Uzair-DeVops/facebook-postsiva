@@ -48,8 +48,6 @@ export async function fetchFacebookPages(options?: { forceRefresh?: boolean }): 
     { withAuth: true },
   );
 
-  console.log("Raw API response:", response); // Debug log
-
   // Backend structure: { success, message, data: { success, message, user_id, pages: [...], count } }
   if (response.data) {
     const data = response.data;
@@ -74,9 +72,6 @@ export async function fetchFacebookPages(options?: { forceRefresh?: boolean }): 
       count: data.count || pagesArray.length,
       user_id: data.user_id,
     };
-    
-    console.log("Normalized response:", normalizedResponse); // Debug log
-    console.log("Pages array length:", pagesArray.length); // Debug log
 
     setCachedValue(cacheKey, normalizedResponse, LONG_CACHE_TTL_MS);
     return normalizedResponse;
@@ -98,7 +93,6 @@ export async function fetchFacebookPages(options?: { forceRefresh?: boolean }): 
   }
 
   // If no pages found
-  console.warn("No pages found in response");
   const emptyResponse: FacebookPagesResponse = {
     success: response.success || false,
     message: response.message || "No pages found",

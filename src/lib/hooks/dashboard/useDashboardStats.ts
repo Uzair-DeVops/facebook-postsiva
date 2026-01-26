@@ -34,19 +34,13 @@ export function useDashboardStats() {
         fetchDashboardVideos({ forceRefresh: options?.forceRefresh }),
       ]);
 
-      // Log the response for debugging
-      console.log('Dashboard Overview Response:', JSON.stringify(overviewData, null, 2));
-      console.log('Dashboard Videos Response:', JSON.stringify(videosData, null, 2));
-
       if (!overviewData.success) {
         const errorMsg = overviewData.error || overviewData.message || 'Failed to fetch dashboard overview';
-        console.error('Dashboard overview error:', errorMsg);
         throw new Error(errorMsg);
       }
 
       // Handle case where data might be null or undefined
       if (!overviewData.data) {
-        console.warn('Dashboard overview data is null/undefined');
         // Set default stats if no data
         const defaultStats: DashboardStats = {
           totalPosts: 0,
@@ -73,7 +67,6 @@ export function useDashboardStats() {
       // Facebook responses should have total_posts, published_posts, etc.
       const data = overviewData.data as any;
       if (data.total_videos !== undefined || data.total_views !== undefined) {
-        console.warn('Received YouTube data instead of Facebook data. Dashboard expects Facebook metrics.');
         // Set default stats for Facebook (since we got YouTube data)
         const defaultStats: DashboardStats = {
           totalPosts: 0,
@@ -119,7 +112,6 @@ export function useDashboardStats() {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to fetch dashboard stats';
-      console.error('Dashboard stats fetch error:', err);
       setState((prev) => ({ ...prev, error: errorMessage, isLoading: false }));
       // Don't throw - let the component handle the error state
       return null;
@@ -195,7 +187,8 @@ export function useDashboardStats() {
 
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
