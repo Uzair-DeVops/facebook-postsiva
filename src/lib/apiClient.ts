@@ -61,31 +61,46 @@ export async function apiFetch<T>(
     }
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
+  // Create AbortController for 3-minute timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes = 180000ms
 
-  if (!res.ok) {
-    let message = res.statusText;
-    try {
-      const data = await res.json();
-      // Handle different error response formats
-      if (typeof data === 'string') {
-        message = data;
-      } else if (data && typeof data === 'object') {
-        message = data.detail || data.message || data.error || JSON.stringify(data);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      let message = res.statusText;
+      try {
+        const data = await res.json();
+        // Handle different error response formats
+        if (typeof data === 'string') {
+          message = data;
+        } else if (data && typeof data === 'object') {
+          message = data.detail || data.message || data.error || JSON.stringify(data);
+        }
+      } catch {
+        // If response is not JSON, use status text
       }
-    } catch {
-      // If response is not JSON, use status text
+      throw new Error(message);
     }
-    throw new Error(message);
-  }
 
-  if (res.status === 204) {
-    return undefined as unknown as T;
-  }
+    if (res.status === 204) {
+      return undefined as unknown as T;
+    }
 
-  return (await res.json()) as T;
+    return (await res.json()) as T;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout after 3 minutes');
+    }
+    throw error;
+  }
 }
 
