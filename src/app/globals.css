@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1877F2;
+  --color-primary-foreground: #ffffff;
+}
+
+html {
+  font-size: 14px;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #020817;
+  --card: #ffffff;
+  --card-foreground: #020817;
+  --popover: #ffffff;
+  --popover-foreground: #020817;
+  --primary: #1877F2;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ff2222;
+  --destructive-foreground: #f8fafc;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #1877F2;
+  --radius: 0.5rem;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.grid-bg {
+  background-image: 
+    linear-gradient(to right, #1877F210 1px, transparent 1px),
+    linear-gradient(to bottom, #1877F210 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.glow-effect {
+  position: absolute;
+  background: radial-gradient(circle, #1877F215 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}

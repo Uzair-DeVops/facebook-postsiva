@@ -1,0 +1,253 @@
+
+> facebook-ui@0.1.0 build
+> next build --turbopack
+
+   ▲ Next.js 15.5.9 (Turbopack)
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 33ms
+ ✓ Compiled successfully in 10.4s
+   Linting and checking validity of types ...
+
+./src/app/dashboard/layout.tsx
+5:31  Warning: 'Suspense' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/page.tsx
+194:40  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+269:53  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+326:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/dashboard/persona/page.tsx
+24:3  Warning: 'Edit3' is defined but never used.  @typescript-eslint/no-unused-vars
+86:6  Warning: React Hook useEffect has missing dependencies: 'load', 'loadAIAgent', and 'selectedPageId'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+810:9  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+813:9  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+856:3  Warning: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+859:9  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+910:4  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+915:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+944:94  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+979:45  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1010:53  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1109:4  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1263:4  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/dashboard/post/page.tsx
+47:22  Warning: 'setVisibility' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+52:25  Warning: 'pages' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+55:10  Warning: 'loadingMedia' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+57:52  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:10  Warning: 'showGenerateContentModal' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+166:17  Warning: 'result' is defined but never used.  @typescript-eslint/no-unused-vars
+530:9  Warning: 'handleGenerateContentOnly' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+756:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1184:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1237:26  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1358:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1813:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1830:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1852:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/profile/page.tsx
+100:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/published/components/EmptyState.tsx
+12:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/dashboard/published/components/FiltersToolbar.tsx
+14:11  Warning: 'PostWithPage' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/published/components/PostCard.tsx
+27:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:58  Warning: 'variants' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/published/components/PostsGrid.tsx
+3:10  Warning: 'motion' is defined but never used.  @typescript-eslint/no-unused-vars
+22:3  Warning: 'containerVariants' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/published/page.tsx
+11:10  Warning: 'PostCard' is defined but never used.  @typescript-eslint/no-unused-vars
+64:10  Warning: 'pagination' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+80:6  Warning: React Hook useEffect has a missing dependency: 'loadPosts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+191:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/dashboard/scheduled/page.tsx
+34:8  Warning: 'Image' is defined but never used.  @typescript-eslint/no-unused-vars
+43:10  Warning: 'getMedia' is defined but never used.  @typescript-eslint/no-unused-vars
+70:10  Warning: 'loadingMedia' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+92:37  Warning: 'textPostLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+283:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+311:25  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+359:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+505:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+684:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1147:43  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1181:36  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+1355:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/storage/page.tsx
+51:6  Warning: React Hook useEffect has a missing dependency: 'loadMedia'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+174:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+355:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/login/page.tsx
+63:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/signup/page.tsx
+17:11  Warning: 'isLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/PageSelectorHeader.tsx
+7:15  Warning: 'FacebookPage' is defined but never used.  @typescript-eslint/no-unused-vars
+17:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+33:6  Warning: React Hook useEffect has missing dependencies: 'loadPages', 'loading', and 'pages.length'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+118:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+118:53  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/dashboard/sidebar.tsx
+11:3  Warning: 'Home' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/apiClient.ts
+32:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/config.ts
+104:9  Warning: 'encodedRedirectUri' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/hooks/auth/AuthContext.tsx
+49:16  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+62:6  Warning: React Hook useEffect has a missing dependency: 'checkFacebookTokenStatus'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/lib/hooks/auth/useAuth.ts
+34:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+51:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+67:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/dashboard/useDashboardStats.ts
+74:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/aiAgentPersona/types.ts
+7:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/aiAgentPersona/useAIAgentPersona.ts
+34:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+110:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+130:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+163:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/contentGenerator/useContentGenerator.ts
+7:8  Warning: 'ContentGenerationRequest' is defined but never used.  @typescript-eslint/no-unused-vars
+11:8  Warning: 'ContentToImageRequest' is defined but never used.  @typescript-eslint/no-unused-vars
+13:8  Warning: 'EditImageRequest' is defined but never used.  @typescript-eslint/no-unused-vars
+92:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+153:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+203:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+255:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+320:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/persona/types.ts
+7:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+13:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+30:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/persona/usePersona.ts
+34:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+76:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+97:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+115:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+141:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/posts/useFacebookPosts.ts
+32:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/storyPost/api.ts
+2:10  Warning: 'buildApiUrl' is defined but never used.  @typescript-eslint/no-unused-vars
+2:23  Warning: 'API_ENDPOINTS' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/hooks/facebook/textPost/useFacebookTextPost.ts
+22:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/token/types.ts
+5:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/token/useFacebookToken.ts
+67:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/userProfile/types.ts
+23:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebook/userProfile/useFacebookUserProfile.ts
+26:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/facebookoauth/useFacebookOAuth.ts
+28:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/googleoauth/api.ts
+1:10  Warning: 'API_BASE_URL' is defined but never used.  @typescript-eslint/no-unused-vars
+11:37  Warning: 'params' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/hooks/googleoauth/useGoogleOAuth.ts
+18:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:8  Warning: React Hook useEffect has unnecessary dependencies: 'handleCallback' and 'router'. Either exclude them or remove the dependency array. Outer scope values like 'handleCallback' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./src/lib/hooks/media/useMediaUpload.ts
+96:57  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/scheduling/api.ts
+2:23  Warning: 'API_ENDPOINTS' is defined but never used.  @typescript-eslint/no-unused-vars
+64:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/scheduling/types.ts
+19:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/hooks/scheduling/useScheduledPosts.ts
+27:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/19) ...
+   Generating static pages (4/19) 
+   Generating static pages (9/19) 
+   Generating static pages (14/19) 
+ ✓ Generating static pages (19/19)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                         Size  First Load JS
+┌ ○ /                            27.2 kB         191 kB
+├ ○ /_not-found                      0 B         117 kB
+├ ○ /about                       11.1 kB         175 kB
+├ ○ /auth/google/callback        1.12 kB         118 kB
+├ ○ /dashboard                   5.66 kB         183 kB
+├ ○ /dashboard/persona           10.7 kB         188 kB
+├ ○ /dashboard/post              14.2 kB         192 kB
+├ ○ /dashboard/profile           4.83 kB         182 kB
+├ ○ /dashboard/published         8.98 kB         187 kB
+├ ○ /dashboard/scheduled         17.5 kB         195 kB
+├ ○ /dashboard/storage           6.88 kB         184 kB
+├ ○ /facebook-connect            7.86 kB         171 kB
+├ ○ /features                    11.7 kB         175 kB
+├ ○ /login                       13.4 kB         177 kB
+├ ○ /payment                     16.5 kB         180 kB
+└ ○ /signup                      13.7 kB         177 kB
++ First Load JS shared by all     134 kB
+  ├ chunks/674649e7dad9f6b4.js   13.1 kB
+  ├ chunks/8082ab48faca5ea1.js   17.2 kB
+  └ chunks/c262c49f15ce2f1f.js   59.2 kB
+  ├ chunks/0e0b76e88f7dc75c.css  15.7 kB
+  └ other shared chunks (total)  28.6 kB
+
+
+○  (Static)  prerendered as static content
+
