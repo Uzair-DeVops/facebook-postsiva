@@ -1,5 +1,8 @@
 'use client';
 
+import { clearCachedValue } from '../../cache';
+import { AUTH_USER_CACHE_KEY } from './api';
+
 import { useCallback, useEffect, useReducer } from 'react';
 import { authReducer, initialAuthState } from './reducers';
 import type { LoginPayload, AuthUser } from './types';
@@ -78,6 +81,7 @@ export function useAuth() {
     // Clear OAuth redirect flag
     localStorage.removeItem('oauth_redirecting');
     localStorage.removeItem('postsiva_subscription');
+    clearCachedValue(AUTH_USER_CACHE_KEY);
     dispatch({ type: 'AUTH_LOGOUT' });
   }, []);
 

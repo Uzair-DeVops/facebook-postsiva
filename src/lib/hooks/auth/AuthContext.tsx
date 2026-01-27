@@ -1,6 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { clearCachedValue } from '../../cache';
+import { AUTH_USER_CACHE_KEY } from './api';
+
+
 import { useRouter } from 'next/navigation';
 import { loginRequest, fetchCurrentUser } from './api';
 import { fetchFacebookToken } from '../facebook/token/api';
@@ -103,9 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
       await loginRequest(payload);
-      
+
       // Fetch updated user info
-      const currentUser = await fetchCurrentUser();
+      const currentUser = await fetchCurrentUser({ forceRefresh: true });
       setUser(currentUser);
 
       // Check Facebook token status
@@ -156,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_INFO);
     localStorage.removeItem('postsiva_subscription');
+    clearCachedValue(AUTH_USER_CACHE_KEY);
     router.push('/login');
   }, [router]);
 

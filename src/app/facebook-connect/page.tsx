@@ -21,12 +21,12 @@ export default function FacebookConnectPage() {
   // Redirect if not authenticated or already has Facebook token
   useEffect(() => {
     if (!isHydrated) return;
-    
+
     if (!user) {
       router.replace('/login');
       return;
     }
-    
+
     if (hasFacebookToken) {
       router.replace('/profile');
       return;
@@ -85,8 +85,8 @@ export default function FacebookConnectPage() {
       const popup = window.open(
         authUrl,
         'facebook-oauth',
-        'width=600,height=700,scrollbars=yes,resizable=yes,left=' + 
-        (window.screen.width / 2 - 300) + ',top=' + 
+        'width=600,height=700,scrollbars=yes,resizable=yes,left=' +
+        (window.screen.width / 2 - 300) + ',top=' +
         (window.screen.height / 2 - 350)
       );
 
@@ -116,7 +116,7 @@ export default function FacebookConnectPage() {
       const pollAttemptRef = { current: 0 };
       const maxPollInterval = 30000; // Max 30 seconds
       const baseInterval = 2000; // Start with 2 seconds
-      
+
       const poll = async () => {
         try {
           // Check if popup is closed (user might have closed it manually)
@@ -127,20 +127,20 @@ export default function FacebookConnectPage() {
 
           // Check if Facebook token exists
           const hasToken = await checkFacebookToken();
-          
+
           if (hasToken) {
             // Token received! Close popup and redirect to profile
             if (popupRef.current && !popupRef.current.closed) {
               popupRef.current.close();
             }
-            
+
             cleanupPolling();
             router.push('/profile');
           } else {
             // Exponential backoff: 2s, 4s, 8s, 16s, 30s (max)
             pollAttemptRef.current++;
             const nextInterval = Math.min(baseInterval * Math.pow(2, pollAttemptRef.current - 1), maxPollInterval);
-            
+
             pollIntervalRef.current = setTimeout(poll, nextInterval);
           }
         } catch (err) {
@@ -150,7 +150,7 @@ export default function FacebookConnectPage() {
           pollIntervalRef.current = setTimeout(poll, nextInterval);
         }
       };
-      
+
       // Start first poll after base interval
       pollIntervalRef.current = setTimeout(poll, baseInterval);
 
@@ -167,7 +167,7 @@ export default function FacebookConnectPage() {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect Facebook';
       setError(errorMessage);
       setIsConnecting(false);
-      
+
       // Cleanup on error
       if (pollIntervalRef.current) {
         clearTimeout(pollIntervalRef.current);
@@ -299,14 +299,18 @@ export default function FacebookConnectPage() {
                 localStorage.removeItem(STORAGE_KEYS.USER_INFO);
                 localStorage.removeItem('postsiva_subscription');
                 localStorage.removeItem('postsiva_selected_page');
-                
+                // Clear cached user data
+                try {
+                  localStorage.removeItem('auth_user:v1');
+                } catch (e) { }
+
                 // Clear any other potential session data
                 Object.keys(localStorage).forEach(key => {
                   if (key.startsWith('postsiva_')) {
                     localStorage.removeItem(key);
                   }
                 });
-                
+
                 // Call logout to clear context state and redirect (logout already redirects to /login)
                 logout();
               }}

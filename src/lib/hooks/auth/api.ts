@@ -28,7 +28,7 @@ export async function signupRequest(payload: {
   return data;
 }
 
-const AUTH_USER_CACHE_KEY = 'auth_user:v1';
+export const AUTH_USER_CACHE_KEY = 'auth_user:v1';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 year
 
 export async function fetchCurrentUser(options?: { forceRefresh?: boolean }): Promise<AuthUser> {
