@@ -109,7 +109,7 @@ export function buildGoogleOAuthLoginUrl(redirectUri: string, origin?: string): 
   const encodedRedirectUri = encodeURIComponent(redirectUri);
   const url = new URL(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`);
   url.searchParams.set('redirect_uri', redirectUri);
-  
+
   // Add origin parameter so backend knows where to redirect after OAuth
   if (origin) {
     url.searchParams.set('origin', origin);
@@ -120,7 +120,7 @@ export function buildGoogleOAuthLoginUrl(redirectUri: string, origin?: string): 
     // Default to localhost for server-side
     url.searchParams.set('origin', 'http://localhost:3000');
   }
-  
+
   return url.toString();
 }
 
@@ -167,17 +167,17 @@ export function getFrontendCallbackUrl(): string {
  * @returns Full frontend callback URL
  */
 export function getFullFrontendCallbackUrl(): string {
-  const frontendUrl = 
+  const frontendUrl =
     process.env.NEXT_PUBLIC_FRONTEND_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    // 'http://localhost:3000';
+    // 'http://localhost:8000';
     'https://facebook-autoamtion-website-sigma.vercel.app';
-  
+
   // Ensure it's a full URL with protocol
-  const url = frontendUrl.startsWith('http') 
-    ? frontendUrl 
+  const url = frontendUrl.startsWith('http')
+    ? frontendUrl
     : `http://${frontendUrl}`;
-  
+
   return `${url}${FRONTEND_URLS.GOOGLE_CALLBACK}`;
 }
 

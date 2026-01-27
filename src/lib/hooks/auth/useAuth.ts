@@ -77,6 +77,7 @@ export function useAuth() {
     localStorage.removeItem('facebook_token_cache');
     // Clear OAuth redirect flag
     localStorage.removeItem('oauth_redirecting');
+    localStorage.removeItem('postsiva_subscription');
     dispatch({ type: 'AUTH_LOGOUT' });
   }, []);
 

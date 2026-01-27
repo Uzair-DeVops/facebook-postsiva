@@ -155,6 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_INFO);
+    localStorage.removeItem('postsiva_subscription');
     router.push('/login');
   }, [router]);
 
