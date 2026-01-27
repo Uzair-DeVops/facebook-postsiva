@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { clearCachedValue } from '../../cache';
 import { AUTH_USER_CACHE_KEY } from './api';
+import { clearSessionData } from '../../auth-helpers';
 
 
 import { useRouter } from 'next/navigation';
@@ -157,10 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setHasFacebookToken(false);
     setError(null);
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER_INFO);
-    localStorage.removeItem('postsiva_subscription');
-    clearCachedValue(AUTH_USER_CACHE_KEY);
+    clearSessionData();
     router.push('/login');
   }, [router]);
 

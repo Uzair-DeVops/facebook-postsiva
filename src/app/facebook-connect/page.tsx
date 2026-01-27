@@ -8,6 +8,7 @@ import { useAuthContext } from '@/lib/hooks/auth/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { API_ENDPOINTS, buildApiUrl, STORAGE_KEYS } from '@/lib/config';
+import { clearSessionData } from '@/lib/auth-helpers';
 
 export default function FacebookConnectPage() {
   const router = useRouter();
@@ -294,24 +295,10 @@ export default function FacebookConnectPage() {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                // Clear all session data from localStorage
-                localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-                localStorage.removeItem(STORAGE_KEYS.USER_INFO);
-                localStorage.removeItem('postsiva_subscription');
-                localStorage.removeItem('postsiva_selected_page');
-                // Clear cached user data
-                try {
-                  localStorage.removeItem('auth_user:v1');
-                } catch (e) { }
+                // Clear all session data
+                clearSessionData();
 
-                // Clear any other potential session data
-                Object.keys(localStorage).forEach(key => {
-                  if (key.startsWith('postsiva_')) {
-                    localStorage.removeItem(key);
-                  }
-                });
-
-                // Call logout to clear context state and redirect (logout already redirects to /login)
+                // Call logout to clear context state and redirect
                 logout();
               }}
               className="text-xs font-bold text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
