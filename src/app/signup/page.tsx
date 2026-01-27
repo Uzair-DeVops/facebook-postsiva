@@ -10,7 +10,7 @@ import { Navbar } from "@/components/sections/navbar";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuthContext } from "@/lib/hooks/auth/AuthContext";
-import { API_ENDPOINTS, buildApiUrl, buildGoogleOAuthLoginUrl, getFrontendCallbackUrl } from "@/lib/config";
+import { API_ENDPOINTS, buildApiUrl, buildGoogleOAuthLoginUrl, getFrontendCallbackUrl, STORAGE_KEYS } from "@/lib/config";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -86,7 +86,7 @@ export default function SignupPage() {
       const data = await response.json();
 
       // Store user info
-      localStorage.setItem('user_info', JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(data));
 
       // Now login to get token
       const loginResponse = await fetch(
@@ -108,7 +108,7 @@ export default function SignupPage() {
       }
 
       const loginData = await loginResponse.json();
-      localStorage.setItem('access_token', loginData.access_token);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, loginData.access_token);
 
       // Check Facebook token and redirect
       const hasFbToken = await checkFacebookToken();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -45,6 +45,7 @@ export default function PersonaPage() {
   const [aiAgentBuildRequirements, setAIAgentBuildRequirements] = useState<string>("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showAIAgentDeleteConfirm, setShowAIAgentDeleteConfirm] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   const { persona, loading, error, build, load, regenerate, remove, reset } = usePersona();
   const {
@@ -58,23 +59,19 @@ export default function PersonaPage() {
     reset: resetAIAgent,
   } = useAIAgentPersona();
 
-  // Load personas when selected page changes
+  // Load personas when selected page changes - single effect, with ref guard
   useEffect(() => {
     if (selectedPageId) {
-      load(selectedPageId);
-      loadAIAgent(selectedPageId);
-    } else {
-      reset();
-      resetAIAgent();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPageId]);
-
-  // Load personas when page selection changes
-  useEffect(() => {
-    if (selectedPageId) {
-      load(selectedPageId);
-      loadAIAgent(selectedPageId);
+      if (hasLoadedRef.current && selectedPageId) {
+        // If we already loaded once and pageId changed, reload
+        load(selectedPageId);
+        loadAIAgent(selectedPageId);
+      } else if (!hasLoadedRef.current) {
+        // First load
+        hasLoadedRef.current = true;
+        load(selectedPageId);
+        loadAIAgent(selectedPageId);
+      }
     } else {
       reset();
       resetAIAgent();

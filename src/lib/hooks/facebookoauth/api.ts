@@ -1,5 +1,8 @@
 import { apiFetch } from '../../apiClient';
+import { clearCachedByPrefix, setCachedValue, getCachedValue } from '../../cache';
 import type { FacebookPagesResponse } from './types';
+
+const LONG_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 year
 
 interface CreateTokenResponse {
   success: boolean;
@@ -29,7 +32,14 @@ export async function createFacebookAuthUrl(): Promise<string> {
   return data.data.auth_url;
 }
 
-export async function fetchFacebookPages(): Promise<FacebookPagesResponse> {
+export async function fetchFacebookPages(options?: { forceRefresh?: boolean }): Promise<FacebookPagesResponse> {
+  const cacheKey = 'facebook_pages:v1';
+
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<FacebookPagesResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
   const response = await apiFetch<any>(
     '/facebook/pages',
     {
@@ -37,8 +47,6 @@ export async function fetchFacebookPages(): Promise<FacebookPagesResponse> {
     },
     { withAuth: true },
   );
-
-  console.log("Raw API response:", response); // Debug log
 
   // Backend structure: { success, message, data: { success, message, user_id, pages: [...], count } }
   if (response.data) {
@@ -64,33 +72,36 @@ export async function fetchFacebookPages(): Promise<FacebookPagesResponse> {
       count: data.count || pagesArray.length,
       user_id: data.user_id,
     };
-    
-    console.log("Normalized response:", normalizedResponse); // Debug log
-    console.log("Pages array length:", pagesArray.length); // Debug log
-    
+
+    setCachedValue(cacheKey, normalizedResponse, LONG_CACHE_TTL_MS);
     return normalizedResponse;
   }
 
   // Fallback: If data is not present, check for pages at root level (legacy)
   if (response.pages !== undefined) {
     const pagesArray = Array.isArray(response.pages) ? response.pages : (response.pages ? [response.pages] : []);
-    return {
+    const legacyResponse: FacebookPagesResponse = {
       success: response.success || false,
       message: response.message || "",
       pages: pagesArray,
       count: response.count || pagesArray.length,
       user_id: response.user_id,
     };
+
+    setCachedValue(cacheKey, legacyResponse, LONG_CACHE_TTL_MS);
+    return legacyResponse;
   }
 
   // If no pages found
-  console.warn("No pages found in response");
-  return {
+  const emptyResponse: FacebookPagesResponse = {
     success: response.success || false,
     message: response.message || "No pages found",
     pages: [],
     count: 0,
   };
+
+  setCachedValue(cacheKey, emptyResponse, LONG_CACHE_TTL_MS);
+  return emptyResponse;
 }
 
 export async function disconnectFacebook(): Promise<void> {
@@ -101,5 +112,10 @@ export async function disconnectFacebook(): Promise<void> {
     },
     { withAuth: true },
   );
+
+  // Clear all Facebook-related caches
+  clearCachedByPrefix('facebook_pages:v1');
+  clearCachedByPrefix('facebook_token:v1');
+  clearCachedByPrefix('facebook_user_profile:v1');
 }
 

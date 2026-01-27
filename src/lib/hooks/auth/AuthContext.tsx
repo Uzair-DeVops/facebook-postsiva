@@ -1,8 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { clearCachedValue } from '../../cache';
+import { AUTH_USER_CACHE_KEY } from './api';
+import { clearSessionData } from '../../auth-helpers';
+
+
 import { useRouter } from 'next/navigation';
 import { loginRequest, fetchCurrentUser } from './api';
+import { fetchFacebookToken } from '../facebook/token/api';
 import type { AuthUser, LoginPayload } from './types';
 import { API_ENDPOINTS, buildApiUrl, STORAGE_KEYS } from '../../config';
 import { getUserUsage } from '../tier/api';
@@ -15,7 +21,7 @@ interface AuthContextType {
   hasFacebookToken: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => void;
-  checkFacebookToken: () => Promise<boolean>;
+  checkFacebookToken: (forceRefresh?: boolean) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,31 +90,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeSession();
   }, []); // Run only once on mount
 
-  const checkFacebookTokenStatus = useCallback(async (): Promise<boolean> => {
+  const checkFacebookTokenStatus = useCallback(async (forceRefresh?: boolean): Promise<boolean> => {
     try {
-      const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      if (!accessToken) return false;
-
-      const url = buildApiUrl(API_ENDPOINTS.FACEBOOK.GET_TOKEN);
-      const response = await fetch(
-        url,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      // Check if the response indicates a successful token retrieval
-      // The endpoint returns { success: true, data: {...} } when token exists
-      // and { success: false, data: {} } when token doesn't exist
-      const hasFbToken = data.success === true && data.data && Object.keys(data.data).length > 0;
+      // Use cached API call instead of direct fetch - will return from localStorage if available
+      const res = await fetchFacebookToken({ forceRefresh });
+      const hasFbToken = res.success === true && res.data && Object.keys(res.data).length > 0;
       setHasFacebookToken(hasFbToken);
       return hasFbToken;
     } catch {
+      setHasFacebookToken(false);
       return false;
     }
   }, []);
@@ -118,9 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
       await loginRequest(payload);
-      
+
       // Fetch updated user info
-      const currentUser = await fetchCurrentUser();
+      const currentUser = await fetchCurrentUser({ forceRefresh: true });
       setUser(currentUser);
 
       // Check Facebook token status
@@ -168,8 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setHasFacebookToken(false);
     setError(null);
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER_INFO);
+    clearSessionData();
     router.push('/login');
   }, [router]);
 

@@ -1,4 +1,5 @@
 import { apiFetch } from '@/lib/apiClient';
+import { getCachedValue, setCachedValue } from '@/lib/cache';
 
 export interface DashboardOverviewResponse {
   success: boolean;
@@ -62,18 +63,40 @@ export interface DashboardStats {
   platformsConnected: string[];
 }
 
-export async function fetchDashboardOverview(): Promise<DashboardOverviewResponse> {
-  return apiFetch<DashboardOverviewResponse>(
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+export async function fetchDashboardOverview(options?: { forceRefresh?: boolean }): Promise<DashboardOverviewResponse> {
+  const cacheKey = 'dashboard_overview:v1';
+
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<DashboardOverviewResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
+  const data = await apiFetch<DashboardOverviewResponse>(
     '/dashboard-overview/',
     { method: 'GET' },
     { withAuth: true }
   );
+
+  setCachedValue(cacheKey, data, CACHE_TTL_MS);
+  return data;
 }
 
-export async function fetchDashboardVideos(): Promise<DashboardVideosResponse> {
-  return apiFetch<DashboardVideosResponse>(
+export async function fetchDashboardVideos(options?: { forceRefresh?: boolean }): Promise<DashboardVideosResponse> {
+  const cacheKey = 'dashboard_videos:v1';
+
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<DashboardVideosResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
+  const data = await apiFetch<DashboardVideosResponse>(
     '/dashboard-overview/videos',
     { method: 'GET' },
     { withAuth: true }
   );
+
+  setCachedValue(cacheKey, data, CACHE_TTL_MS);
+  return data;
 }

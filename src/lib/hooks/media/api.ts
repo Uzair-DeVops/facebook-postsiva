@@ -1,4 +1,5 @@
 import { apiFetch } from '../../apiClient';
+import { clearCachedByPrefix, getCachedValue, setCachedValue } from '../../cache';
 
 export interface MediaUploadResponse {
   success: boolean;
@@ -58,6 +59,17 @@ export interface UploadMediaParams {
   platform?: string;
 }
 
+const LIST_CACHE_TTL_MS = 60 * 1000; // 1 minute
+const listCacheKey = (params?: {
+  media_type?: 'image' | 'video';
+  platform?: string;
+  limit?: number;
+  offset?: number;
+}) =>
+  `media_list:v1:${params?.media_type || 'all'}:${params?.platform || 'all'}:${
+    params?.limit || 'default'
+  }:${params?.offset || 0}`;
+
 export async function uploadMedia(params: UploadMediaParams): Promise<MediaUploadResponse | BulkMediaUploadResponse> {
   const formData = new FormData();
   
@@ -97,6 +109,8 @@ export async function uploadMedia(params: UploadMediaParams): Promise<MediaUploa
     { withAuth: true },
   );
 
+  clearCachedByPrefix('media_list:v1');
+
   return result;
 }
 
@@ -105,7 +119,15 @@ export async function listMedia(params?: {
   platform?: string;
   limit?: number;
   offset?: number;
+  forceRefresh?: boolean;
 }): Promise<MediaListResponse> {
+  const cacheKey = listCacheKey(params);
+
+  if (!params?.forceRefresh) {
+    const cached = getCachedValue<MediaListResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
   const queryParams = new URLSearchParams();
   
   if (params?.media_type) {
@@ -132,10 +154,19 @@ export async function listMedia(params?: {
     { withAuth: true },
   );
 
+  setCachedValue(cacheKey, result, LIST_CACHE_TTL_MS);
+
   return result;
 }
 
-export async function getMedia(mediaId: string): Promise<MediaUploadResponse> {
+export async function getMedia(mediaId: string, options?: { forceRefresh?: boolean }): Promise<MediaUploadResponse> {
+  const cacheKey = `media_get:v1:${mediaId}`;
+  
+  if (!options?.forceRefresh) {
+    const cached = getCachedValue<MediaUploadResponse>(cacheKey);
+    if (cached) return cached;
+  }
+
   const result = await apiFetch<MediaUploadResponse>(
     `/media/${mediaId}`,
     {
@@ -143,6 +174,9 @@ export async function getMedia(mediaId: string): Promise<MediaUploadResponse> {
     },
     { withAuth: true },
   );
+
+  // Cache for 1 hour - media metadata doesn't change frequently
+  setCachedValue(cacheKey, result, 60 * 60 * 1000);
 
   return result;
 }
@@ -155,6 +189,8 @@ export async function deleteMedia(mediaId: string): Promise<{ success: boolean; 
     },
     { withAuth: true },
   );
+
+  clearCachedByPrefix('media_list:v1');
 
   return result;
 }

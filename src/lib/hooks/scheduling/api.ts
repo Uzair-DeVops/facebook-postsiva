@@ -1,5 +1,6 @@
 import { apiFetch } from '../../apiClient';
-import { buildApiUrl, API_ENDPOINTS } from '../../config';
+import { clearCachedByPrefix, getCachedValue, setCachedValue } from '../../cache';
+import { buildApiUrl } from '../../config';
 import type { ScheduledPostsResponse, GetScheduledPostsParams, ScheduledPost } from './types';
 
 interface BackendScheduledPostsResponse {
@@ -18,6 +19,14 @@ export async function getScheduledPosts(
 ): Promise<ScheduledPostsResponse> {
   const url = buildApiUrl('/scheduled-posts/my-scheduled-posts');
   const queryParams = new URLSearchParams();
+  const cacheKey = `scheduled_posts:v1:${
+    params?.platform || 'all'
+  }:${params?.limit || 'default'}:${params?.offset || 0}`;
+
+  if (!params?.forceRefresh) {
+    const cached = getCachedValue<ScheduledPostsResponse>(cacheKey);
+    if (cached) return cached;
+  }
   
   if (params?.platform) {
     queryParams.append('platform', params.platform);
@@ -42,12 +51,14 @@ export async function getScheduledPosts(
 
   // Transform backend response to frontend format
   if (response.success && response.data) {
-    return {
+    const formatted: ScheduledPostsResponse = {
       user_id: '', // Will be set by the hook if needed
       scheduled_posts: response.data.scheduled_posts || [],
       total: response.data.total || 0,
       platform: response.data.platform || null,
     };
+    setCachedValue(cacheKey, formatted, 2 * 60 * 1000);
+    return formatted;
   }
 
   // Return empty response if not successful
@@ -84,6 +95,8 @@ export async function updateScheduledPost(
   );
 
   // Transform backend response to frontend format
+  clearCachedByPrefix('scheduled_posts:v1');
+
   if (response.success && response.data) {
     return {
       user_id: '',
@@ -116,6 +129,8 @@ export async function deleteScheduledPost(
   );
 
   // Transform backend response to frontend format
+  clearCachedByPrefix('scheduled_posts:v1');
+
   if (response.success && response.data) {
     return {
       user_id: '',

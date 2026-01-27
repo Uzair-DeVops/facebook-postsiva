@@ -14,7 +14,7 @@ import Image from "next/image";
 
 export function PageSelectorHeader() {
   const { selectedPage, setSelectedPage, pages, setPages, loading, setLoading } = useSelectedPage();
-  const { user } = useAuthContext();
+  const { user, checkFacebookToken } = useAuthContext();
   const { profile } = useFacebookUserProfile({ autoLoad: true });
   const router = useRouter();
   const [showPageDropdown, setShowPageDropdown] = useState(false);
@@ -60,7 +60,6 @@ export function PageSelectorHeader() {
     try {
       setLoading(true);
       const response = await fetchFacebookPages();
-      console.log("Pages response:", response); // Debug log
       
       // The fetchFacebookPages function already normalizes the response
       // and exposes pages at response.pages
@@ -75,9 +74,6 @@ export function PageSelectorHeader() {
           pagesArray = [response.pages].filter(page => page != null && page.page_id);
         }
         
-        console.log("Extracted pages array:", pagesArray); // Debug log
-        console.log("Pages count:", pagesArray.length); // Debug log
-        
         if (pagesArray.length > 0) {
           setPages(pagesArray);
           
@@ -86,15 +82,12 @@ export function PageSelectorHeader() {
             setSelectedPage(pagesArray[0]);
           }
         } else {
-          console.warn("No valid pages found in response");
           setPages([]);
         }
       } else {
-        console.warn("Response not successful:", response.message);
         setPages([]);
       }
     } catch (err) {
-      console.error("Failed to load Facebook pages:", err);
       setPages([]);
     } finally {
       setLoading(false);
@@ -122,6 +115,14 @@ export function PageSelectorHeader() {
       
       // Close the dropdown
       setShowProfileDropdown(false);
+      
+      // Force refresh Facebook token status in AuthContext before redirect
+      // This ensures hasFacebookToken is updated before the redirect happens
+      try {
+        await checkFacebookToken(true); // Force refresh to bypass cache
+      } catch (err) {
+        // Ignore errors - token check will happen on page load anyway
+      }
       
       // Use window.location.href to force a full page reload
       // This ensures AuthContext re-checks the Facebook token status

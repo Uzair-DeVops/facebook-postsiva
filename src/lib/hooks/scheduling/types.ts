@@ -53,4 +53,5 @@ export interface GetScheduledPostsParams {
   platform?: string;
   limit?: number;
   offset?: number;
+  forceRefresh?: boolean;
 }

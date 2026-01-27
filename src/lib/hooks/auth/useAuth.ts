@@ -1,5 +1,9 @@
 'use client';
 
+import { clearCachedValue } from '../../cache';
+import { AUTH_USER_CACHE_KEY } from './api';
+import { clearSessionData } from '../../auth-helpers';
+
 import { useCallback, useEffect, useReducer } from 'react';
 import { authReducer, initialAuthState } from './reducers';
 import type { LoginPayload, AuthUser } from './types';
@@ -73,10 +77,8 @@ export function useAuth() {
   const logout = useCallback(() => {
     setAccessToken(null);
     setUserInfo(null);
-    // Clear Facebook token cache on logout
-    localStorage.removeItem('facebook_token_cache');
-    // Clear OAuth redirect flag
-    localStorage.removeItem('oauth_redirecting');
+    clearSessionData();
+    clearCachedValue(AUTH_USER_CACHE_KEY);
     dispatch({ type: 'AUTH_LOGOUT' });
   }, []);
 
