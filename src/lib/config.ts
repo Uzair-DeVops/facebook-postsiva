@@ -24,6 +24,10 @@ const getApiBaseUrl = (): string => {
 
 export const API_BASE_URL = getApiBaseUrl();
 
+/** WhatsApp business number that users message to for posting (can override via env) */
+export const WHATSAPP_BUSINESS_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER || "+923157349862";
+
 /**
  * API Endpoints
  * All API endpoints are relative to API_BASE_URL unless they start with http:// or https://

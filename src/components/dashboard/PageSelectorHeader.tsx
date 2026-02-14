@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Loader2, LogOut, MessageCircle, X } from "lucide-react";
+import { ChevronDown, Loader2, LogOut, MessageCircle, X, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchFacebookPages, disconnectFacebook } from "@/lib/hooks/facebookoauth/api";
 import { getUserPhone, setUserPhone, deleteUserPhone } from "@/lib/hooks/userPhone/api";
+import { WHATSAPP_BUSINESS_NUMBER } from "@/lib/config";
 import type { FacebookPage } from "@/lib/hooks/facebookoauth/types";
 import { useSelectedPage } from "@/lib/hooks/facebook/selectedPage/SelectedPageContext";
 import { useAuthContext } from "@/lib/hooks/auth/AuthContext";
@@ -21,11 +22,13 @@ export function PageSelectorHeader() {
   const [showPageDropdown, setShowPageDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showWhatsAppSuccessModal, setShowWhatsAppSuccessModal] = useState(false);
   const [whatsAppPhoneInput, setWhatsAppPhoneInput] = useState("");
   const [whatsAppSavedPhone, setWhatsAppSavedPhone] = useState<string | null>(null);
   const [whatsAppLoading, setWhatsAppLoading] = useState(false);
   const [whatsAppSaving, setWhatsAppSaving] = useState(false);
   const [whatsAppRemoving, setWhatsAppRemoving] = useState(false);
+  const [whatsAppConnectedForDropdown, setWhatsAppConnectedForDropdown] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -53,6 +56,21 @@ export function PageSelectorHeader() {
       setSelectedPage(pages[0]);
     }
   }, [pages, selectedPage, loading, setSelectedPage]);
+
+  // Fetch WhatsApp status when profile dropdown opens
+  useEffect(() => {
+    if (showProfileDropdown && user) {
+      getUserPhone()
+        .then((res) => {
+          if (res.success && res.data?.phone_number) {
+            setWhatsAppConnectedForDropdown(res.data.phone_number);
+          } else {
+            setWhatsAppConnectedForDropdown(null);
+          }
+        })
+        .catch(() => setWhatsAppConnectedForDropdown(null));
+    }
+  }, [showProfileDropdown, user]);
   
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
@@ -134,7 +152,9 @@ export function PageSelectorHeader() {
       if (res.success && res.data?.phone_number) {
         setWhatsAppSavedPhone(res.data.phone_number);
         setWhatsAppPhoneInput(res.data.phone_number);
-        alert("WhatsApp number saved! You can now use the WhatsApp bot to post to Facebook.");
+        setWhatsAppConnectedForDropdown(res.data.phone_number);
+        setShowWhatsAppModal(false);
+        setShowWhatsAppSuccessModal(true);
       } else {
         alert(res.message || "Failed to save WhatsApp number");
       }
@@ -153,6 +173,7 @@ export function PageSelectorHeader() {
       if (res.success) {
         setWhatsAppSavedPhone(null);
         setWhatsAppPhoneInput("");
+        setWhatsAppConnectedForDropdown(null);
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to remove WhatsApp number");
@@ -331,9 +352,25 @@ export function PageSelectorHeader() {
                   <div className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center flex-shrink-0">
                     <MessageCircle className="w-4 h-4 text-[#25D366]" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold">Connect WhatsApp</p>
-                    <p className="text-xs text-slate-400">Link your number to post via WhatsApp</p>
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold">
+                        {whatsAppConnectedForDropdown ? "WhatsApp Connected" : "Connect WhatsApp"}
+                      </p>
+                      {whatsAppConnectedForDropdown && (
+                        <span
+                          title={`Message ${WHATSAPP_BUSINESS_NUMBER} to post via WhatsApp`}
+                          className="cursor-help inline-flex"
+                        >
+                          <Info className="w-3.5 h-3.5 text-slate-400" />
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {whatsAppConnectedForDropdown
+                        ? "Click to update or remove"
+                        : "Link your number to post via WhatsApp"}
+                    </p>
                   </div>
                 </button>
                 <button
@@ -483,6 +520,54 @@ export function PageSelectorHeader() {
 
       {/* Profile Image with Dropdown */}
       {renderProfileSection()}
+
+      {/* WhatsApp Success Modal (no auto-close) */}
+      <AnimatePresence>
+        {showWhatsAppSuccessModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[220]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 z-[230]"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-[#25D366]/20 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-[#25D366]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">WhatsApp Connected</h3>
+                    <p className="text-sm text-slate-500">You can now post to Facebook via WhatsApp</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowWhatsAppSuccessModal(false)}
+                  className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-slate-600 text-sm mb-4">
+                Message on this number to use the WhatsApp agent for posting:
+              </p>
+              <p className="text-lg font-mono font-bold text-primary mb-6">{WHATSAPP_BUSINESS_NUMBER}</p>
+              <button
+                onClick={() => setShowWhatsAppSuccessModal(false)}
+                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm"
+              >
+                Close
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* WhatsApp Connect Modal */}
       <AnimatePresence>
