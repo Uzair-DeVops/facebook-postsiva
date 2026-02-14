@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Loader2, LogOut } from "lucide-react";
+import { ChevronDown, Loader2, LogOut, MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchFacebookPages, disconnectFacebook } from "@/lib/hooks/facebookoauth/api";
+import { getUserPhone, setUserPhone, deleteUserPhone } from "@/lib/hooks/userPhone/api";
 import type { FacebookPage } from "@/lib/hooks/facebookoauth/types";
 import { useSelectedPage } from "@/lib/hooks/facebook/selectedPage/SelectedPageContext";
 import { useAuthContext } from "@/lib/hooks/auth/AuthContext";
@@ -19,6 +20,12 @@ export function PageSelectorHeader() {
   const router = useRouter();
   const [showPageDropdown, setShowPageDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsAppPhoneInput, setWhatsAppPhoneInput] = useState("");
+  const [whatsAppSavedPhone, setWhatsAppSavedPhone] = useState<string | null>(null);
+  const [whatsAppLoading, setWhatsAppLoading] = useState(false);
+  const [whatsAppSaving, setWhatsAppSaving] = useState(false);
+  const [whatsAppRemoving, setWhatsAppRemoving] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -91,6 +98,66 @@ export function PageSelectorHeader() {
       setPages([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenWhatsAppModal = async () => {
+    setShowProfileDropdown(false);
+    setShowWhatsAppModal(true);
+    setWhatsAppLoading(true);
+    try {
+      const res = await getUserPhone();
+      if (res.success && res.data?.phone_number) {
+        setWhatsAppSavedPhone(res.data.phone_number);
+        setWhatsAppPhoneInput(res.data.phone_number);
+      } else {
+        setWhatsAppSavedPhone(null);
+        setWhatsAppPhoneInput("");
+      }
+    } catch {
+      setWhatsAppSavedPhone(null);
+      setWhatsAppPhoneInput("");
+    } finally {
+      setWhatsAppLoading(false);
+    }
+  };
+
+  const handleSaveWhatsAppPhone = async () => {
+    const trimmed = whatsAppPhoneInput.trim();
+    if (!trimmed) {
+      alert("Please enter your WhatsApp number");
+      return;
+    }
+    setWhatsAppSaving(true);
+    try {
+      const res = await setUserPhone(trimmed);
+      if (res.success && res.data?.phone_number) {
+        setWhatsAppSavedPhone(res.data.phone_number);
+        setWhatsAppPhoneInput(res.data.phone_number);
+        alert("WhatsApp number saved! You can now use the WhatsApp bot to post to Facebook.");
+      } else {
+        alert(res.message || "Failed to save WhatsApp number");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to save WhatsApp number");
+    } finally {
+      setWhatsAppSaving(false);
+    }
+  };
+
+  const handleRemoveWhatsAppPhone = async () => {
+    if (!confirm("Remove your linked WhatsApp number?")) return;
+    setWhatsAppRemoving(true);
+    try {
+      const res = await deleteUserPhone();
+      if (res.success) {
+        setWhatsAppSavedPhone(null);
+        setWhatsAppPhoneInput("");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to remove WhatsApp number");
+    } finally {
+      setWhatsAppRemoving(false);
     }
   };
 
@@ -258,6 +325,18 @@ export function PageSelectorHeader() {
                   </p>
                 </div>
                 <button
+                  onClick={handleOpenWhatsAppModal}
+                  className="w-full px-4 py-3 text-left flex items-center gap-3 transition-colors hover:bg-slate-50 text-slate-700"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold">Connect WhatsApp</p>
+                    <p className="text-xs text-slate-400">Link your number to post via WhatsApp</p>
+                  </div>
+                </button>
+                <button
                   onClick={handleDisconnect}
                   disabled={disconnecting}
                   className={cn(
@@ -404,6 +483,87 @@ export function PageSelectorHeader() {
 
       {/* Profile Image with Dropdown */}
       {renderProfileSection()}
+
+      {/* WhatsApp Connect Modal */}
+      <AnimatePresence>
+        {showWhatsAppModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWhatsAppModal(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 z-[210]"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#25D366]/10 flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-[#25D366]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Connect WhatsApp</h3>
+                    <p className="text-xs text-slate-400">Link your WhatsApp number to post to Facebook via chat</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowWhatsAppModal(false)}
+                  className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {whatsAppLoading ? (
+                <div className="py-8 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                      WhatsApp Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={whatsAppPhoneInput}
+                      onChange={(e) => setWhatsAppPhoneInput(e.target.value)}
+                      placeholder="+1234567890"
+                      className="w-full h-12 px-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 font-medium"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveWhatsAppPhone}
+                      disabled={whatsAppSaving || !whatsAppPhoneInput.trim()}
+                      className="flex-1 h-12 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm flex items-center justify-center gap-2"
+                    >
+                      {whatsAppSaving ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : null}
+                      {whatsAppSaving ? "Saving..." : "Save"}
+                    </button>
+                    {whatsAppSavedPhone && (
+                      <button
+                        onClick={handleRemoveWhatsAppPhone}
+                        disabled={whatsAppRemoving}
+                        className="px-4 h-12 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 font-bold text-sm flex items-center justify-center gap-2"
+                      >
+                        {whatsAppRemoving && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {whatsAppRemoving ? "Removing..." : "Remove"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
