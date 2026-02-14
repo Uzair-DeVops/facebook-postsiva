@@ -1,15 +1,18 @@
 export interface PersonaData {
-  page_info_analysis?: {
-    page_focus?: string;
-    content_type?: string;
+  audience_analysis?: {
     target_audience?: string;
-    brand_voice?: string;
+    audience_demographics?: string[];
+    skill_level?: string;
+    audience_interests?: string[];
+    viewer_intent?: string[];
+    pain_points_addressed?: string[];
     [key: string]: any;
   };
   content_patterns?: {
     post_naming_convention?: string;
     content_formula?: string;
     post_title_style?: string;
+    emoji_usage?: string;
     [key: string]: any;
   };
   writing_style?: {
@@ -22,11 +25,6 @@ export interface PersonaData {
   topics_and_keywords?: {
     primary_topic?: string;
     common_keywords?: string[];
-    [key: string]: any;
-  };
-  emoji_usage?: {
-    uses_emojis?: boolean;
-    common_emojis?: string[];
     [key: string]: any;
   };
   content_examples?: {
@@ -58,8 +56,7 @@ export interface PersonaPatchRequest {
   content_patterns?: PersonaData['content_patterns'];
   writing_style?: PersonaData['writing_style'];
   topics_and_keywords?: PersonaData['topics_and_keywords'];
-  emoji_usage?: PersonaData['emoji_usage'];
-  page_info_analysis?: PersonaData['page_info_analysis'];
+  audience_analysis?: PersonaData['audience_analysis'];
   ai_insights?: PersonaData['ai_insights'];
 }
 

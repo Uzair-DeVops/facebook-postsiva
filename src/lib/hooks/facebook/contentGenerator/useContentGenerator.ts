@@ -109,10 +109,10 @@ export function useContentGenerator({ pageId, onSuccess, onError }: UseContentGe
   );
 
   /**
-   * Use Case 2: Generate/regenerate post content only (no image)
-   * Can be used to:
-   * - Generate new content from idea
-   * - Regenerate existing content based on requirements
+   * Use Case 2: Generate content only (no image) – enhance content from idea or from current text.
+   * Sends content in body (backend does not use previous_output).
+   * - When previousContent provided: enhances that content (content + user_requirements).
+   * - When only postIdea: sends postIdea as content to expand (content + user_requirements).
    */
   const generateContentOnly = useCallback(
     async (postIdea: string, requirements?: string, previousContent?: string) => {
@@ -123,8 +123,9 @@ export function useContentGenerator({ pageId, onSuccess, onError }: UseContentGe
         throw error;
       }
 
-      if (!postIdea.trim() && !previousContent?.trim()) {
-        const error = new Error('Please enter a post idea or provide previous content');
+      const contentToSend = (previousContent?.trim() || postIdea?.trim() || '').trim();
+      if (!contentToSend) {
+        const error = new Error('Please enter a post idea or provide content to enhance');
         setState((prev) => ({ ...prev, error: error.message }));
         onError?.(error);
         throw error;
@@ -133,19 +134,10 @@ export function useContentGenerator({ pageId, onSuccess, onError }: UseContentGe
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        // If we have previous content, use it for regeneration
-        // Otherwise, use postIdea for new generation
-        const request: EnhanceContentRequest = previousContent?.trim()
-          ? {
-              previous_output: previousContent.trim(),
-              user_requirements: requirements?.trim() || postIdea.trim() || undefined,
-            }
-          : {
-              content: postIdea.trim(),
-              user_requirements: requirements?.trim() || undefined,
-            };
-
-        const result = await enhanceContent(pageId, request);
+        const result = await enhanceContent(pageId, {
+          content: contentToSend,
+          user_requirements: requirements?.trim() || undefined,
+        });
 
         setState((prev) => ({
           ...prev,
@@ -157,6 +149,50 @@ export function useContentGenerator({ pageId, onSuccess, onError }: UseContentGe
         return result;
       } catch (err: any) {
         const error = err instanceof Error ? err : new Error(err.message || 'Failed to generate content');
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: error.message,
+        }));
+        onError?.(error);
+        throw error;
+      }
+    },
+    [pageId, onSuccess, onError]
+  );
+
+  /**
+   * Regenerate from last saved draft (backend loads previous content from DB).
+   * Send only optional user_requirements; no content in body.
+   */
+  const regenerateFromDraft = useCallback(
+    async (requirements?: string) => {
+      if (!pageId) {
+        const error = new Error('Please select a Facebook page first');
+        setState((prev) => ({ ...prev, error: error.message }));
+        onError?.(error);
+        throw error;
+      }
+
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const result = await enhanceContent(
+          pageId,
+          { user_requirements: requirements?.trim() || undefined },
+          { regenerate: true }
+        );
+
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          lastGeneratedContent: result.content,
+        }));
+
+        onSuccess?.(result);
+        return result;
+      } catch (err: any) {
+        const error = err instanceof Error ? err : new Error(err.message || 'Failed to regenerate from draft');
         setState((prev) => ({
           ...prev,
           loading: false,
@@ -477,6 +513,7 @@ export function useContentGenerator({ pageId, onSuccess, onError }: UseContentGe
     // Actions
     generatePostWithImage,
     generateContentOnly,
+    regenerateFromDraft,
     enhanceExistingContent,
     generateImageFromContent,
     editExistingImage,

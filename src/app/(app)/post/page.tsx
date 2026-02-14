@@ -636,25 +636,33 @@ function PostPageContent() {
     }
   };
 
-  // Use Case 2: Generate/regenerate content only (no image)
+  // Use Case 2: Generate content only (no image)
+  // - When user has content in editor: regenerate from last saved draft (backend loads from DB; only send requirements).
+  // - When user has no content: generate from idea (send content = idea + requirements).
   const handleGenerateContentOnly = async () => {
-    // If we have existing content, use it for regeneration
-    // Otherwise, use contentIdea for new generation
-    const hasPreviousContent = content.trim().length > 0;
+    const hasContentInEditor = content.trim().length > 0;
+    const hasIdea = contentIdea.trim().length > 0;
 
-    if (!hasPreviousContent && !contentIdea.trim()) {
-      alert("Please enter a post idea or provide previous content");
+    if (hasContentInEditor) {
+      try {
+        await contentGeneratorOnly.regenerateFromDraft(contentRequirements.trim() || undefined);
+      } catch (err) {
+        console.error("Failed to regenerate from draft:", err);
+      }
+      return;
+    }
+
+    if (!hasIdea) {
+      alert("Please enter a post idea, or add content first and use 'Generate content only' to regenerate from your last draft.");
       return;
     }
 
     try {
       await contentGeneratorOnly.generateContentOnly(
         contentIdea.trim(),
-        contentRequirements.trim() || undefined,
-        hasPreviousContent ? content : undefined
+        contentRequirements.trim() || undefined
       );
     } catch (err) {
-      // Error is handled by the hook's onError callback
       console.error("Failed to generate content:", err);
     }
   };
@@ -971,7 +979,7 @@ function PostPageContent() {
                     ) : (
                       <>
                         <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        Generate Idea
+                        Generate Post
                       </>
                     )}
                   </Button>
@@ -1561,7 +1569,7 @@ function PostPageContent() {
         )}
       </AnimatePresence>
 
-      {/* Generate from Idea Modal */}
+      {/* Generate Post Modal */}
       <AnimatePresence>
         {showGenerateIdeaModal && (
           <motion.div
@@ -1582,10 +1590,10 @@ function PostPageContent() {
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
-                    <span className="truncate">Generate from Idea</span>
+                    <span className="truncate">Generate Post</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 font-bold mt-1">
-                    Create a complete post from your idea
+                    Create a complete post with AI
                   </p>
                 </div>
                 <button

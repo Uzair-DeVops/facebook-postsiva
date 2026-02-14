@@ -12,9 +12,9 @@ export interface ContentGenerationResponse {
 }
 
 export interface EnhanceContentRequest {
+  /** Required when regenerate=false. Omit when regenerate=true (backend loads from draft). */
   content?: string;
   user_requirements?: string;
-  previous_output?: string;
 }
 
 export interface EnhanceContentResponse {
@@ -83,24 +83,24 @@ export async function generateContentFromIdea(
 }
 
 /**
- * Enhance existing content (content only, no image)
+ * Enhance existing content (content only, no image).
+ * - regenerate=false (default): send content in body (required) + optional user_requirements.
+ * - regenerate=true: backend loads last draft from DB; send only optional user_requirements in body.
  */
 export async function enhanceContent(
   pageId: string,
   payload: EnhanceContentRequest,
+  options?: { regenerate?: boolean },
 ): Promise<EnhanceContentResponse> {
-  const result = await apiFetch<EnhanceContentResponse>(
-    `/facebook/content-generator/enhance-content/${pageId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    },
-    { withAuth: true },
-  );
-
+  const regenerate = options?.regenerate === true;
+  const url = regenerate
+    ? `/facebook/content-generator/enhance-content/${pageId}?regenerate=true`
+    : `/facebook/content-generator/enhance-content/${pageId}`;
+  const result = await apiFetch<EnhanceContentResponse>(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }, { withAuth: true });
   return result;
 }
 

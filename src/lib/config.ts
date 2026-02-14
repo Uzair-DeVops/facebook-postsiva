@@ -10,12 +10,16 @@
  * - NEXT_PUBLIC_FRONTEND_URL: Frontend URL for OAuth callbacks (default: http://localhost:3000)
  */
 
-// Base API URL - can be overridden via environment variables
+// Base API URL - can be overridden via environment variables.
+// IMPORTANT: NEXT_PUBLIC_* vars are baked in at build time. After changing .env,
+// restart the dev server and clear the cache: rm -rf .next && npm run dev
 const getApiBaseUrl = (): string => {
-  // Check both env var names for flexibility
-  return (
-    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
-  );
+  const raw =
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    '';
+  const url = (typeof raw === 'string' ? raw : '').trim().replace(/^["']|["']$/g, '');
+  return url || 'http://localhost:8000';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
