@@ -17,11 +17,11 @@ export function PageHeader({ page, postCount }: PageHeaderProps) {
             {postCount} {postCount === 1 ? 'post' : 'posts'}
           </p>
         </div>
-        {page.page_id && page.page_id !== 'unknown' && (
+        {/* {page.page_id && page.page_id !== 'unknown' && (
           <div className="px-4 py-2 bg-primary/10 rounded-xl">
             <p className="text-xs font-black text-primary uppercase tracking-wider">Page ID: {page.page_id}</p>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
