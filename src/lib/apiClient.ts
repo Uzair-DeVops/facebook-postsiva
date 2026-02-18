@@ -7,7 +7,7 @@ export const ACCESS_TOKEN_KEY = STORAGE_KEYS.ACCESS_TOKEN;
 export const USER_INFO_KEY = STORAGE_KEYS.USER_INFO;
 
 // Request deduplication: prevent duplicate concurrent requests
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 function getRequestKey(path: string, options: RequestInit, withAuth: boolean): string {
   const method = options.method || 'GET';
@@ -55,7 +55,7 @@ export function setUserInfo(user: unknown | null) {
   }
 }
 
-export function getUserInfo<T = any>(): T | null {
+export function getUserInfo<T = unknown>(): T | null {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(USER_INFO_KEY);
   if (!raw) return null;
@@ -66,15 +66,53 @@ export function getUserInfo<T = any>(): T | null {
   }
 }
 
+const AUTH_REFRESH_PATH = '/auth/refresh';
+
+interface ApiFetchOptions {
+  withAuth?: boolean;
+  /** Internal: set when retrying after refresh to avoid retry loop */
+  _internalRetried?: boolean;
+}
+
+async function doRefreshAndRetry<T>(
+  path: string,
+  options: RequestInit,
+): Promise<T> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    setAccessToken(null);
+    setRefreshToken(null);
+    setUserInfo(null);
+    throw new Error('Session expired. Please log in again.');
+  }
+  const refreshRes = await fetch(buildApiUrl(AUTH_REFRESH_PATH), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+  if (!refreshRes.ok) {
+    setAccessToken(null);
+    setRefreshToken(null);
+    setUserInfo(null);
+    const msg = (await refreshRes.json().catch(() => ({})) as { detail?: string })?.detail ?? 'Session expired. Please log in again.';
+    throw new Error(msg);
+  }
+  const data = (await refreshRes.json()) as { access_token: string; refresh_token?: string; user?: unknown };
+  setAccessToken(data.access_token);
+  if (data.refresh_token) setRefreshToken(data.refresh_token);
+  if (data.user) setUserInfo(data.user);
+  return apiFetch<T>(path, options, { withAuth: true, _internalRetried: true });
+}
+
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
-  { withAuth }: { withAuth?: boolean } = {},
+  opts: ApiFetchOptions = {},
 ): Promise<T> {
-  // For GET requests, check if there's a pending identical request
+  const { withAuth = false, _internalRetried = false } = opts;
   const isGetRequest = !options.method || options.method === 'GET';
   if (isGetRequest) {
-    const requestKey = getRequestKey(path, options, withAuth || false);
+    const requestKey = getRequestKey(path, options, withAuth);
     const pendingRequest = pendingRequests.get(requestKey);
     if (pendingRequest) {
       return pendingRequest as Promise<T>;
@@ -82,55 +120,43 @@ export async function apiFetch<T>(
   }
 
   const url = buildApiUrl(path);
-
   const headers = new Headers(options.headers || {});
-  // If body is FormData, let the browser set Content-Type with boundary
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   if (!isFormData) {
     headers.set('Content-Type', headers.get('Content-Type') ?? 'application/json');
   }
-
   if (withAuth) {
     const token = getAccessToken();
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
+    if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
-  // Create AbortController for 3-minute timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes = 180000ms
+  const timeoutId = setTimeout(() => controller.abort(), 180000);
 
-  const requestPromise = (async () => {
+  const requestPromise = (async (): Promise<T> => {
     try {
-      const res = await fetch(url, {
-        ...options,
-        headers,
-        signal: controller.signal,
-      });
-
+      const res = await fetch(url, { ...options, headers, signal: controller.signal });
       clearTimeout(timeoutId);
-
+      if (res.status === 401 && withAuth && !_internalRetried && path !== AUTH_REFRESH_PATH) {
+        return doRefreshAndRetry<T>(path, options);
+      }
       if (!res.ok) {
         let message = res.statusText;
         try {
           const data = await res.json();
-          // Handle different error response formats
-          if (typeof data === 'string') {
-            message = data;
-          } else if (data && typeof data === 'object') {
-            message = data.detail || data.message || data.error || JSON.stringify(data);
+          if (typeof data === 'string') message = data;
+          else if (data && typeof data === 'object') {
+            message = (data as { detail?: string; message?: string; error?: string }).detail
+              ?? (data as { message?: string }).message
+              ?? (data as { error?: string }).error
+              ?? JSON.stringify(data);
           }
         } catch {
-          // If response is not JSON, use status text
+          /* ignore */
         }
         throw new Error(message);
       }
-
-      if (res.status === 204) {
-        return undefined as unknown as T;
-      }
-
+      if (res.status === 204) return undefined as unknown as T;
       return (await res.json()) as T;
     } catch (error) {
       clearTimeout(timeoutId);
@@ -139,20 +165,17 @@ export async function apiFetch<T>(
       }
       throw error;
     } finally {
-      // Remove from pending requests after completion (only for GET requests)
       if (isGetRequest) {
-        const requestKey = getRequestKey(path, options, withAuth || false);
+        const requestKey = getRequestKey(path, options, withAuth);
         pendingRequests.delete(requestKey);
       }
     }
   })();
 
-  // Store pending request for GET requests to enable deduplication
   if (isGetRequest) {
-    const requestKey = getRequestKey(path, options, withAuth || false);
+    const requestKey = getRequestKey(path, options, withAuth);
     pendingRequests.set(requestKey, requestPromise);
   }
-
   return requestPromise;
 }
 
