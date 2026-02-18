@@ -17,7 +17,8 @@ import {
   ArrowUp,
   X,
   Brain,
-  MessageSquare
+  MessageSquare,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/hooks/auth/AuthContext";
@@ -64,6 +65,11 @@ const menuItems = [
     title: "AI Usage",
     icon: Brain,
     href: "/ai-usage",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/settings",
   },
 ];
 

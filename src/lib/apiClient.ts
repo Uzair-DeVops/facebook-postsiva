@@ -30,6 +30,22 @@ export function setAccessToken(token: string | null) {
   }
 }
 
+const REFRESH_TOKEN_KEY = STORAGE_KEYS.REFRESH_TOKEN;
+
+export function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export function setRefreshToken(token: string | null) {
+  if (typeof window === 'undefined') return;
+  if (token) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+}
+
 export function setUserInfo(user: unknown | null) {
   if (typeof window === 'undefined') return;
   if (user) {

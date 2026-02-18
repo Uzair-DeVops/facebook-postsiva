@@ -3,14 +3,13 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { clearCachedValue } from '../../cache';
 import { AUTH_USER_CACHE_KEY } from './api';
+import { getRefreshToken } from '../../apiClient';
 import { clearSessionData } from '../../auth-helpers';
-
-
 import { useRouter } from 'next/navigation';
-import { loginRequest, fetchCurrentUser } from './api';
+import { loginRequest, fetchCurrentUser, logoutRequest } from './api';
 import { fetchFacebookToken } from '../facebook/token/api';
 import type { AuthUser, LoginPayload } from './types';
-import { API_ENDPOINTS, buildApiUrl, STORAGE_KEYS } from '../../config';
+import { STORAGE_KEYS } from '../../config';
 import { getUserUsage } from '../tier/api';
 
 interface AuthContextType {
@@ -20,7 +19,7 @@ interface AuthContextType {
   error: string | null;
   hasFacebookToken: boolean;
   login: (payload: LoginPayload) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   checkFacebookToken: (forceRefresh?: boolean) => Promise<boolean>;
 }
 
@@ -76,8 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.debug('Subscription check failed:', err);
         }
       } catch (err) {
-        // Token invalid or expired, clear session
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_INFO);
         setUser(null);
         setHasFacebookToken(false);
@@ -154,10 +153,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [checkFacebookTokenStatus, router]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUser(null);
     setHasFacebookToken(false);
     setError(null);
+    const refreshToken = getRefreshToken();
+    try {
+      await logoutRequest(refreshToken);
+    } catch {
+      // ignore so user still gets logged out locally
+    }
     clearSessionData();
     router.push('/login');
   }, [router]);

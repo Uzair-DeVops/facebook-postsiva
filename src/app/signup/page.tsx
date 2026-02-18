@@ -10,7 +10,8 @@ import { Navbar } from "@/components/sections/navbar";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuthContext } from "@/lib/hooks/auth/AuthContext";
-import { API_ENDPOINTS, buildApiUrl, buildGoogleOAuthLoginUrl, getFrontendCallbackUrl, STORAGE_KEYS } from "@/lib/config";
+import { signupRequest, loginRequest } from "@/lib/hooks/auth/api";
+import { buildGoogleOAuthLoginUrl, getFrontendCallbackUrl } from "@/lib/config";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -62,57 +63,14 @@ export default function SignupPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        buildApiUrl(API_ENDPOINTS.AUTH.SIGNUP),
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            username: email.split('@')[0],
-            full_name: fullName,
-            password,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Signup failed');
-      }
-
-      const data = await response.json();
-
-      // Store user info
-      localStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(data));
-
-      // Now login to get token
-      const loginResponse = await fetch(
-        buildApiUrl(API_ENDPOINTS.AUTH.LOGIN),
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
-
-      if (!loginResponse.ok) {
-        throw new Error('Login after signup failed');
-      }
-
-      const loginData = await loginResponse.json();
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, loginData.access_token);
-
-      // Check Facebook token and redirect
+      await signupRequest({
+        email,
+        username: email.split('@')[0],
+        full_name: fullName,
+        password,
+      });
+      await loginRequest({ email, password });
       const hasFbToken = await checkFacebookToken();
-
       if (!hasFbToken) {
         router.push('/facebook-connect');
       } else {

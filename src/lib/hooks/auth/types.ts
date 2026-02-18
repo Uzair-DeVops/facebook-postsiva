@@ -4,6 +4,8 @@ export interface AuthUser {
   username: string;
   full_name?: string | null;
   is_active?: boolean;
+  is_admin?: boolean;
+  email_verified?: boolean;
   created_at?: string;
   updated_at?: string | null;
 }
@@ -28,6 +30,7 @@ export interface LoginPayload {
 
 export interface LoginResponse {
   access_token: string;
+  refresh_token?: string;
   token_type: string;
   user: AuthUser;
 }

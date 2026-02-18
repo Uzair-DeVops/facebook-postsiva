@@ -13,6 +13,7 @@ export function clearSessionData() {
 
     // 1. Clear core session keys
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_INFO);
     localStorage.removeItem('postsiva_subscription');
     localStorage.removeItem('postsiva_selected_page');

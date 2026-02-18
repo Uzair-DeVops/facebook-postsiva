@@ -38,6 +38,14 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     SIGNUP: '/auth/signup',
     ME: '/auth/me',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_EMAIL: '/auth/verify-email',
+    RESEND_VERIFICATION: '/auth/resend-verification-email',
+    CHANGE_PASSWORD: '/auth/change-password',
+    PROFILE: '/auth/profile',
     GOOGLE_LOGIN: '/auth/google/login',
     GOOGLE_CALLBACK: '/auth/google/callback',
   },
@@ -153,6 +161,9 @@ export const FRONTEND_URLS = {
   HOME: '/',
   LOGIN: '/login',
   SIGNUP: '/signup',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  VERIFY_EMAIL: '/verify-email',
   DASHBOARD: '/profile',
   FACEBOOK_CONNECT: '/facebook-connect',
   GOOGLE_CALLBACK: '/auth/google/callback',
@@ -194,5 +205,6 @@ export function getFullFrontendCallbackUrl(): string {
  */
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'postsiva_access_token',
+  REFRESH_TOKEN: 'postsiva_refresh_token',
   USER_INFO: 'postsiva_user',
 } as const;
