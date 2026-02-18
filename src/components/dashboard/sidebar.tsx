@@ -88,8 +88,8 @@ export const DashboardSidebar = ({ isOpen, setIsOpen }: DashboardSidebarProps) =
     setMounted(true);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsOpen(false);
   };
 
