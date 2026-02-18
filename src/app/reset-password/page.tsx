@@ -7,10 +7,10 @@ import { Facebook, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/sections/navbar";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { resetPasswordRequest } from "@/lib/hooks/auth/api";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
@@ -152,5 +152,24 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </>
+  );
+}
+
+function ResetPasswordFallback() {
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-white flex items-center justify-center pt-20">
+        <div className="text-slate-500">Loading…</div>
+      </div>
+    </>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordFallback />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

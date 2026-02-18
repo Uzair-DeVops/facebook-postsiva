@@ -5,10 +5,10 @@ import { Facebook, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/sections/navbar";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { verifyEmailRequest } from "@/lib/hooks/auth/api";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -93,5 +93,24 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </>
+  );
+}
+
+function VerifyEmailFallback() {
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-white flex items-center justify-center pt-20">
+        <div className="text-slate-500">Loading…</div>
+      </div>
+    </>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<VerifyEmailFallback />}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
